@@ -457,6 +457,7 @@ export default function HomePage() {
                       },
                     },
                   }}
+                  
                 />
                 {!isPlaying && (
                   <motion.div
