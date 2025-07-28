@@ -277,7 +277,6 @@ export default function BookAppointmentPage() {
 
     try {
       const result = await createAppointment({
-        user_id: user.id,
         patient_name: values.patientName.trim(),
         age: values.age,
         gender: values.gender,
@@ -287,7 +286,6 @@ export default function BookAppointmentPage() {
         appointment_date: values.date,
         appointment_time: values.time,
         notes: values.notes?.trim() || "",
-        status: "pending",
       });
 
       if (result.success) {

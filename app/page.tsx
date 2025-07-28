@@ -453,7 +453,7 @@ export default function HomePage() {
                         loop: 0,
                         controls: 1,
                         playsinline: 1,
-                        origin: 'https://appointment-ms-xi.vercel.app',
+                        origin: typeof window !== 'undefined' ? window.location.origin : undefined,
                       },
                     },
                   }}
