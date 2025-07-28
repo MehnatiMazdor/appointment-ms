@@ -28,8 +28,9 @@ import { useAuth } from "@/providers/authContext"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import Image from "next/image"
-import dynamic from "next/dynamic"
-const ReactPlayer = dynamic(() => import('react-player/lazy'), { ssr: false })
+// import dynamic from "next/dynamic"
+// const ReactPlayer = dynamic(() => import('react-player/lazy'), { ssr: false })
+import ReactPlayer from 'react-player'
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -427,7 +428,7 @@ export default function HomePage() {
               {/* Video Container */}
               <div className="relative aspect-video rounded-2xl overflow-hidden bg-black">
                 
-                <ReactPlayer
+               {/* <ReactPlayer
                   url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                   width="100%"
                   height="100%"
@@ -441,24 +442,39 @@ export default function HomePage() {
                   config={{
                     youtube: {
                       playerVars: {
-                        showinfo: 0,
-                        modestbranding: 1,
-                        rel: 0,
-                        iv_load_policy: 3,
-                        cc_load_policy: 0,
-                        fs: 1,
-                        disablekb: 0,
-                        autoplay: 0,
-                        mute: 0,
-                        loop: 0,
+                        // showinfo: 0,
+                        // modestbranding: 1,
+                        // rel: 0,
+                        // iv_load_policy: 3,
+                        // cc_load_policy: 0,
+                        // fs: 1,
+                        // disablekb: 0,
+                        // autoplay: 0,
+                        // mute: 0,
+                        // loop: 0,
                         controls: 1,
                         playsinline: 1,
-                        origin: "https://appointment-ms-puce.vercel.app/",
+                        origin: 'https://appointment-ms-xi.vercel.app',
                       },
                     },
                   }}
-                  
+                /> */}
+                <ReactPlayer
+                  src="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                  width="100%"
+                  height="100%"
+                  playing={isPlaying}
+                  controls
+                  light={true}
+                  config={
+                    {
+                      youtube: {
+                        origin: 'https://appointment-ms-xi.vercel.app',
+                      },
+                    }
+                  }
                 />
+                
                 {!isPlaying && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
