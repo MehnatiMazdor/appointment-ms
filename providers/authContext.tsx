@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { supabase } from "@/lib/supabase-frontend-client";
 import type { User } from "@supabase/supabase-js";
 
@@ -17,8 +24,13 @@ interface AuthState {
   profile: Profile | null;
   loading: boolean;
   error: string | null;
-  signInWithOtp: (email: string) => Promise<{ success: boolean; error: string | null }>;
-  verifyOtp: (email: string, token: string) => Promise<{ success: boolean; error: string | null }>;
+  signInWithOtp: (
+    email: string
+  ) => Promise<{ success: boolean; error: string | null }>;
+  verifyOtp: (
+    email: string,
+    token: string
+  ) => Promise<{ success: boolean; error: string | null }>;
   signOut: () => Promise<{ success: boolean; error: unknown }>;
   getDashboardPath: (role?: string) => string;
 }
@@ -26,7 +38,10 @@ interface AuthState {
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
 // Define the initial state with all required properties
-const initialState: Omit<AuthState, "signInWithOtp" | "verifyOtp" | "signOut" | "getDashboardPath"> = {
+const initialState: Omit<
+  AuthState,
+  "signInWithOtp" | "verifyOtp" | "signOut" | "getDashboardPath"
+> = {
   user: null,
   profile: null,
   loading: true,
@@ -120,6 +135,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, [getProfile]);
+  
 
   const signInWithOtp = useCallback(async (email: string) => {
     try {
@@ -136,7 +152,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { success: true, error: null };
     } catch (error: any) {
       const errorMessage = error.message || "Failed to send OTP";
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }));
+      setAuthState((prev) => ({
+        ...prev,
+        error: errorMessage,
+        loading: false,
+      }));
       return { success: false, error: errorMessage };
     }
   }, []);
@@ -145,14 +165,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }));
 
-      const { data, error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: "email",
+      });
 
       if (error || !data?.user) throw new Error("Authentication failed");
 
       return { success: true, error: null };
     } catch (error: any) {
-      const errorMessage = error.message || "Authentication failed. Please try again.";
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }));
+      const errorMessage =
+        error.message || "Authentication failed. Please try again.";
+      setAuthState((prev) => ({
+        ...prev,
+        error: errorMessage,
+        loading: false,
+      }));
       return { success: false, error: errorMessage };
     }
   }, []);
@@ -175,7 +204,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user: null,
         profile: null,
         loading: false,
-        error: null
+        error: null,
       });
       console.log("User signed out successfully");
       return { success: true, error: null };
@@ -208,11 +237,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     getDashboardPath,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthState => {
@@ -222,4 +247,3 @@ export const useAuth = (): AuthState => {
   }
   return context;
 };
-

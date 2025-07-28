@@ -48,7 +48,8 @@ export async function updateSession(request: NextRequest) {
   // Redirect unauthenticated users if they try to access any protected /dashboard route
   if (
     !user &&
-    pathname.startsWith('/dashboard')
+    pathname.startsWith('/dashboard') &&
+    pathname.startsWith('/book') 
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth'

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { DateFilterOption } from "@/components/date-filter-select";
 import {
-  DateFilterOption,
-} from "@/components/date-filter-select";
-import { Appointment, PaginationState, AppointmentStats, StatusFilterOption, AppointmentResult } from "@/types/types";
-
+  Appointment,
+  PaginationState,
+  AppointmentStats,
+  StatusFilterOption,
+} from "@/types/types";
 
 export function useAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -92,7 +94,7 @@ export function useAppointments() {
   // const createAppointment = useCallback(
   //   async (
   //     appointmentData: Omit<Appointment, "id" | "created_at" | "updated_at">
-  //   ): Promise<AppointmentResult> => {
+  //   ) => {
   //     try {
   //       setError(null);
 
@@ -104,7 +106,10 @@ export function useAppointments() {
   //         body: JSON.stringify(appointmentData),
   //       });
 
+  //       console.log("Response status:", response.status);
+
   //       const result = await response.json();
+  //       console.log("Create appointment response:", result);
 
   //       if (!response.ok) {
   //         if (result.limitExceeded) {
@@ -115,11 +120,11 @@ export function useAppointments() {
   //             limitType: result.limitType,
   //             error: result.error,
   //           };
-            
+
   //         }
-  //         return { 
-  //           success: false, 
-  //           error: result.error 
+  //         return {
+  //           success: false,
+  //           error: result.error
   //         };
   //       }
 
@@ -135,85 +140,55 @@ export function useAppointments() {
   //   },
   //   []
   // );
-  // First, define the types at the top of your file or in a types file
-type AppointmentBase = Omit<Appointment, "id" | "created_at" | "updated_at">;
+  const createAppointment = useCallback(
+    async (
+      appointmentData: Omit<Appointment, "id" | "created_at" | "updated_at">
+    ) => {
+      try {
+        setError(null);
 
-type AppointmentSuccess = {
-  success: true;
-  data: Appointment;
-  error: null;
-};
+        const response = await fetch("/api/appointments", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(appointmentData),
+        });
 
-type AppointmentError = {
-  success: false;
-  error: string | string[];
-  data: null;
-};
+        const result = await response.json();
 
-type AppointmentLimitExceeded = {
-  success: false;
-  limitExceeded: true;
-  existingAppointments: Appointment[];
-  limitType: "self" | "relative" | "family";
-  error: string;
-  data: null;
-};
-
-type AppointmentResult = AppointmentSuccess | AppointmentError | AppointmentLimitExceeded;
-
-// Then update your createAppointment function
-const createAppointment = useCallback(
-  async (appointmentData: AppointmentBase): Promise<AppointmentResult> => {
-    try {
-      setError(null);
-
-      const response = await fetch("/api/appointments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(appointmentData),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        if (result.limitExceeded) {
+        if (!response.ok) {
+          // Handle both the daily total limit and policy violation cases
+          if (
+            result.code === "DAILY_TOTAL_LIMIT_REACHED" ||
+            result.code === "DAILY_APPOINTMENT_POLICY_VIOLATION"
+          ) {
+            return {
+              success: false,
+              limitExceeded: true,
+              error: Array.isArray(result.error)
+                ? result.error.join(" ")
+                : result.error,
+              code: result.code,
+            };
+          }
           return {
             success: false,
-            limitExceeded: true,
-            existingAppointments: result.existingAppointments || [],
-            limitType: result.limitType,
-            error: result.error,
-            data: null,
+            error: Array.isArray(result.error)
+              ? result.error.join(" ")
+              : result.error,
           };
         }
-        return { 
-          success: false, 
-          error: result.error,
-          data: null,
-        };
-      }
 
-      console.log("Appointment created successfully:", result.appointment);
-      return { 
-        success: true, 
-        data: result.appointment, 
-        error: null 
-      };
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to create appointment";
-      setError(errorMessage);
-      console.error("Error creating appointment:", err);
-      return { 
-        success: false, 
-        error: errorMessage,
-        data: null,
-      };
-    }
-  },
-  []
-);
+        return { success: true, data: result.appointment };
+      } catch (err: any) {
+        const errorMessage = err.message || "Failed to create appointment";
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+    },
+    []
+  );
 
   // Update appointment status
   const updateAppointmentStatus = useCallback(
@@ -261,29 +236,79 @@ const createAppointment = useCallback(
     []
   );
 
- 
   // Function to get available dates (today + next 3 days, excluding Sundays)
-  const getAvailableDates = (): string[] => {
-      const dates: string[] = [];
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Normalize to start of day
+  // const getAvailableDates = useCallback((): string[] => {
+  //   const dates: string[] = [];
+  //   const today = new Date();
+  //   today.setHours(0, 0, 0, 0); // Normalize to start of day
 
-      for (let i = 0; i < 4; i++) { // Loop for today and next 3 days (total 4)
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
+  //   for (let i = 0; i < 4; i++) {
+  //     const date = new Date(today);
+  //     date.setDate(today.getDate() + i);
 
-        // Check if it's not a Sunday (Sunday is 0)
-        if (date.getDay() !== 0) {
-          dates.push(date.toISOString().split('T')[0]); // Format as YYYY-MM-DD
-        } else {
-          // If it's a Sunday, we still want 4 valid days, so decrement 'i' to skip Sunday
-          i--;
-        }
+  //     // Skip Sunday (0)
+  //     if (date.getDay() !== 0) {
+  //       dates.push(date.toISOString().split("T")[0]);
+  //     } else {
+  //       i--; // Ensure we still get 4 valid days
+  //     }
+  //   }
+
+  //   return dates;
+  // }, []);
+
+  // Get available appointment dates (today + 3 days, excluding Sundays)
+  // const getAvailableDates = useCallback(() => {
+  //   const dates: string[] = []
+  //   const today = new Date()
+
+  //   // Set to local timezone to avoid date shifting issues
+  //   today.setHours(0, 0, 0, 0)
+
+  //   for (let i = 0; i < 10; i++) {
+  //     const date = new Date(today)
+  //     date.setDate(today.getDate() + i)
+
+  //     // Skip Sundays (0 = Sunday)
+  //     if (date.getDay() !== 0) {
+  //       // Format as YYYY-MM-DD in local timezone
+  //       const year = date.getFullYear()
+  //       const month = String(date.getMonth() + 1).padStart(2, "0")
+  //       const day = String(date.getDate()).padStart(2, "0")
+  //       dates.push(`${year}-${month}-${day}`)
+  //     }
+
+  //     // Stop when we have 4 valid dates
+  //     if (dates.length >= 2) break
+  //   }
+
+  //   return dates
+  // }, [])
+
+  const getAvailableDates = useCallback(() => {
+    const dates: string[] = [];
+    // Use UTC methods to avoid timezone issues
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0); // Normalize to UTC midnight
+
+    for (let i = 0; i < 2; i++) {
+      const date = new Date(today);
+      date.setUTCDate(today.getUTCDate() + i);
+
+      // Skip Sundays (0 = Sunday)
+      if (date.getUTCDay() !== 0) {
+        // Format as YYYY-MM-DD using UTC values
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+        const day = String(date.getUTCDate()).padStart(2, "0");
+        dates.push(`${year}-${month}-${day}`);
       }
-      return dates;
-    };
 
+      if (dates.length >= 2) break;
+    }
 
+    return dates;
+  }, []);
 
   return {
     appointments,

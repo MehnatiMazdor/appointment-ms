@@ -426,6 +426,7 @@ export default function HomePage() {
             <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 p-3">
               {/* Video Container */}
               <div className="relative aspect-video rounded-2xl overflow-hidden bg-black">
+                
                 <ReactPlayer
                   url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                   width="100%"

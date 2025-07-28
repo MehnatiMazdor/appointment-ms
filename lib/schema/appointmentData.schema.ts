@@ -20,11 +20,19 @@ const dateSchema = z.string().refine((val) => {
 
 const timeSchema = z.string().refine((val) => {
   const availableTimes = [
-    "09:00", "09:30", "10:00", "10:30", "11:00",
-    "11:30", "12:00", "12:30", "13:00", "13:30",
-    "14:00", "14:30", "15:00", "15:30", "16:00",
-    "16:30"
-  ];
+  "9:00 AM",
+  "9:30 AM",
+  "10:00 AM",
+  "10:30 AM",
+  "11:00 AM",
+  "11:30 AM",
+  "4:00 PM",
+  "4:30 PM",
+  "5:00 PM",
+  "5:30 PM",
+  "6:00 PM",
+  "6:30 PM",
+];
   return availableTimes.includes(val);
 }, "Selected time is not available. Please choose a valid time from the list.");
 
