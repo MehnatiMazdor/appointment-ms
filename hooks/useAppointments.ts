@@ -142,7 +142,7 @@ export function useAppointments() {
   // );
   const createAppointment = useCallback(
     async (
-      appointmentData: Omit<Appointment, "id" | "created_at" | "updated_at">
+      appointmentData: Omit<Appointment, "id" | "created_at" | "updated_at" | "user_id" | "status"> 
     ) => {
       try {
         setError(null);
